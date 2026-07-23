@@ -1,0 +1,15 @@
+{
+  "name": "youtube-chat-relay",
+  "version": "1.0.0",
+  "description": "Relay che rileva la diretta YouTube dal Channel ID e inoltra i messaggi chat via WebSocket all'overlay StreamElements",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
