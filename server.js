@@ -193,6 +193,19 @@ async function pollLiveChat() {
     const data = await res.json();
 
     if (data.error) {
+      const reason = data.error.errors && data.error.errors[0] && data.error.errors[0].reason;
+      const isTemporary = ['quotaExceeded', 'rateLimitExceeded', 'userRateLimitExceeded', 'backendError', 'internalError'].includes(reason);
+
+      if (isTemporary) {
+        // Errore temporaneo: NON tocchiamo liveChatId/nextPageToken, riproviamo più avanti
+        console.warn('[RELAY] Errore temporaneo, riprovo tra un minuto:', data.error.message);
+        statusMessage = `Rallentamento temporaneo (${reason || 'errore API'}), sto riprovando automaticamente — non serve reincollare il link.`;
+        statusIsError = true;
+        pollTimer = setTimeout(pollLiveChat, 60 * 1000);
+        return;
+      }
+
+      // Errore definitivo: qui sì che la chat/diretta non è più raggiungibile
       console.warn('[RELAY] Chat non più disponibile:', data.error.message);
       liveChatId = null;
       nextPageToken = null;
@@ -217,7 +230,9 @@ async function pollLiveChat() {
       });
     });
 
-    const delay = Math.max(data.pollingIntervalMillis || 5000, 2000); // mai sotto i 2s, per rispettare le quote
+    // Il minimo e' piu' alto di prima (8s invece di 2s) per consumare meno
+    // quota durante dirette lunghe, dato che ogni chiamata costa unita' API.
+    const delay = Math.max(data.pollingIntervalMillis || 8000, 8000);
     pollTimer = setTimeout(pollLiveChat, delay);
   } catch (err) {
     console.error('[RELAY] Errore nel polling della chat:', err.message);
