@@ -36,7 +36,10 @@ if (!API_KEY || !CHANNEL_ID) {
 const YT_API = 'https://www.googleapis.com/youtube/v3';
 
 // Ogni quanto ricontrolliamo se è iniziata una diretta (quando non ce n'è una attiva)
-const LIVE_SEARCH_INTERVAL_MS = 60 * 1000;
+// A 60s, la search.list (100 unita' a chiamata) esaurisce la quota
+// giornaliera (10.000 unita') in un paio d'ore se non c'e' mai diretta.
+// Con 5 minuti restiamo entro un consumo sostenibile per tutto il giorno.
+const LIVE_SEARCH_INTERVAL_MS = 5 * 60 * 1000;
 
 // ---- stato interno ----
 let liveChatId = null;
